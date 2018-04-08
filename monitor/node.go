@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	crypto "github.com/tendermint/go-crypto"
+	 "github.com/tendermint/go-crypto"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	rpc_client "github.com/tendermint/tendermint/rpc/lib/client"
 	tmtypes "github.com/tendermint/tendermint/types"
 	"github.com/tendermint/tmlibs/events"
 	"github.com/tendermint/tmlibs/log"
-	em "github.com/tendermint/tools/tm-monitor/eventmeter"
+	em "github.com/kidinamoto01/Basecoin-test/sig-monitor/eventmeter"
 )
 
 const maxRestarts = 25
@@ -27,6 +27,8 @@ type Node struct {
 	Online       bool    `json:"online"`
 	Height       uint64  `json:"height"`
 	BlockLatency float64 `json:"block_latency" wire:"unsafe"` // ms, interval between block commits
+	Precommit    uint64   `json:"precommit"`
+	Prevote      uint64   `json:"prevote"`
 
 	// em holds the ws connection. Each eventMeter callback is called in a separate go-routine.
 	em eventMeter
@@ -37,6 +39,7 @@ type Node struct {
 	blockCh        chan<- tmtypes.Header
 	blockLatencyCh chan<- float64
 	disconnectCh   chan<- bool
+	voteCh         chan<-interface{}
 
 	checkIsValidatorInterval time.Duration
 
@@ -76,6 +79,10 @@ func SetCheckIsValidatorInterval(d time.Duration) func(n *Node) {
 		n.checkIsValidatorInterval = d
 	}
 }
+///send vote to channel
+func (n *Node) SendVoteTo(ch chan<-interface{}){
+	n.voteCh = ch
+}
 
 func (n *Node) SendBlocksTo(ch chan<- tmtypes.Header) {
 	n.blockCh = ch
@@ -99,6 +106,9 @@ func (n *Node) Start() error {
 	if err := n.em.Start(); err != nil {
 		return err
 	}
+
+	//add callback for new vote
+	n.em.Subscribe(tmtypes.EventQueryVote.String(),newVoteCallback(n))
 
 	n.em.RegisterLatencyCallback(latencyCallback(n))
 	err := n.em.Subscribe(tmtypes.EventQueryNewBlockHeader.String(), newBlockCallback(n))
@@ -137,6 +147,21 @@ func newBlockCallback(n *Node) em.EventCallbackFunc {
 	}
 }
 
+// implements eventmeter.EventCallbackFunc
+func newVoteCallback(n *Node) em.EventCallbackFunc {
+	return func(metric *em.EventMetric, data interface{}) {
+		v := data.(tmtypes.TMEventData).Unwrap().(tmtypes.EventDataVote)
+
+		n.logger.Info("new vote", "height", v.Vote.Height, " round: ", v.Vote.Round," type:",v.Vote.Type)
+
+		//fmt.Println("new vote", "height", v.Vote.Height, " round: ", v.Vote.Round," type:",v.Vote.Type)
+
+		if n.voteCh != nil {
+			n.voteCh <- v
+		}
+	}
+}
+
 // implements eventmeter.EventLatencyFunc
 func latencyCallback(n *Node) em.LatencyCallbackFunc {
 	return func(latency float64) {
@@ -148,6 +173,18 @@ func latencyCallback(n *Node) em.LatencyCallbackFunc {
 		}
 	}
 }
+
+//func preVoteCallback(n *Node) em.LatencyCallbackFunc{
+//	return func(num uint64) {
+//		n.BlockLatency = latency / 1000000.0 // ns to ms
+//		n.logger.Info("new block latency", "latency", n.BlockLatency)
+//
+//		if n.blockLatencyCh != nil {
+//			n.blockLatencyCh <- latency
+//		}
+//	}
+//
+//}
 
 // implements eventmeter.DisconnectCallbackFunc
 func disconnectCallback(n *Node) em.DisconnectCallbackFunc {

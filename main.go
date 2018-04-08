@@ -8,10 +8,10 @@ import (
 
 	cmn "github.com/tendermint/tmlibs/common"
 	"github.com/tendermint/tmlibs/log"
-	monitor "github.com/tendermint/tools/tm-monitor/monitor"
+	 "github.com/kidinamoto01/Basecoin-test/sig-monitor/monitor"
 )
 
-var version = "0.3.1"
+var version = "0.1.0"
 
 var logger = log.NewNopLogger()
 
@@ -20,6 +20,8 @@ func main() {
 	var noton bool
 
 	flag.StringVar(&listenAddr, "listen-addr", "tcp://0.0.0.0:46670", "HTTP and Websocket server listen address")
+	//flag.StringVar(&listenAddr, "listen-addr", "tcp://0.0.0.0:46670", "HTTP and Websocket server listen address")
+
 	flag.BoolVar(&noton, "no-ton", false, "Do not show ton (table of nodes)")
 
 	flag.Usage = func() {

@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	metrics "github.com/rcrowley/go-metrics"
+	 "github.com/rcrowley/go-metrics"
 	tmtypes "github.com/tendermint/tendermint/types"
 )
 
@@ -46,6 +46,9 @@ type Network struct {
 	NumNodesMonitored       int `json:"num_nodes_monitored"`
 	NumNodesMonitoredOnline int `json:"num_nodes_monitored_online"`
 
+	TotalPrevote      uint64 `json:"total_prevote"`
+	TotalPrecommit      uint64 `json:"total_precommit"`
+
 	Health Health `json:"health"`
 
 	UptimeData *UptimeData `json:"uptime_data"`
@@ -66,6 +69,8 @@ func NewNetwork() *Network {
 			Uptime:    100.0,
 		},
 		nodeStatusMap: make(map[string]bool),
+		TotalPrecommit:0,
+		TotalPrevote:0,
 	}
 }
 
@@ -96,6 +101,21 @@ func (n *Network) NewBlockLatency(l float64) {
 	n.blockLatencyMeter.Mark(int64(l))
 	n.AvgBlockLatency = n.blockLatencyMeter.Rate1() / 1000000.0 // ns to ms
 }
+
+//new metric for node
+func (n *Network) NewValidatorMetrics(v interface{}) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	vote := v.(tmtypes.EventDataVote)
+	switch vote.Vote.Type {
+	case tmtypes.VoteTypePrevote:
+		n.TotalPrevote++
+	case tmtypes.VoteTypePrecommit:
+		n.TotalPrecommit++
+	}
+
+}
+
 
 // RecalculateUptime calculates uptime on demand.
 func (n *Network) RecalculateUptime() {

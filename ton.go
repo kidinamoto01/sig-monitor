@@ -7,7 +7,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	monitor "github.com/tendermint/tools/tm-monitor/monitor"
+	"github.com/kidinamoto01/Basecoin-test/sig-monitor/monitor"
 )
 
 const (
@@ -72,9 +72,10 @@ func (o *Ton) printHeader() {
 
 func (o *Ton) printTable() {
 	w := tabwriter.NewWriter(o.Output, 0, 0, 5, ' ', 0)
-	fmt.Fprintln(w, "NAME\tHEIGHT\tBLOCK LATENCY\tONLINE\tVALIDATOR\t")
+	fmt.Fprintln(w, "NAME\tHEIGHT\tBLOCK LATENCY\tONLINE\tVALIDATOR\tPREVOTE\tPRECOMMIT")
 	for _, n := range o.monitor.Nodes {
-		fmt.Fprintln(w, fmt.Sprintf("%s\t%d\t%.3f ms\t%v\t%v\t", n.Name, n.Height, n.BlockLatency, n.Online, n.IsValidator))
+
+		fmt.Fprintln(w, fmt.Sprintf("%s\t%d\t%.3f ms\t%v\t%v\t%d\t%d", n.Name, n.Height, n.BlockLatency, n.Online, n.IsValidator,o.monitor.Network.TotalPrevote,o.monitor.Network.TotalPrecommit))
 	}
 	w.Flush()
 }

@@ -79,6 +79,8 @@ func (m *Monitor) Monitor(n *Node) error {
 
 	blockCh := make(chan tmtypes.Header, 10)
 	n.SendBlocksTo(blockCh)
+	voteCh := make(chan interface{},10)
+	n.SendVoteTo(voteCh)
 	blockLatencyCh := make(chan float64, 10)
 	n.SendBlockLatenciesTo(blockLatencyCh)
 	disconnectCh := make(chan bool, 10)
@@ -91,7 +93,7 @@ func (m *Monitor) Monitor(n *Node) error {
 	m.Network.NewNode(n.Name)
 
 	m.nodeQuit[n.Name] = make(chan struct{})
-	go m.listen(n.Name, blockCh, blockLatencyCh, disconnectCh, m.nodeQuit[n.Name])
+	go m.listen(n.Name, blockCh, blockLatencyCh, disconnectCh, m.nodeQuit[n.Name],voteCh)
 
 	return nil
 }
@@ -139,7 +141,7 @@ func (m *Monitor) Stop() {
 }
 
 // main loop where we listen for events from the node
-func (m *Monitor) listen(nodeName string, blockCh <-chan tmtypes.Header, blockLatencyCh <-chan float64, disconnectCh <-chan bool, quit <-chan struct{}) {
+func (m *Monitor) listen(nodeName string, blockCh <-chan tmtypes.Header, blockLatencyCh <-chan float64, disconnectCh <-chan bool, quit <-chan struct{},vCh <-chan interface{}) {
 	logger := m.logger.With("node", nodeName)
 
 	for {
@@ -161,6 +163,9 @@ func (m *Monitor) listen(nodeName string, blockCh <-chan tmtypes.Header, blockLa
 		case <-time.After(nodeLivenessTimeout):
 			logger.Info("event", fmt.Sprintf("node was not responding for %v", nodeLivenessTimeout))
 			m.Network.NodeIsDown(nodeName)
+		case v :=<-vCh:
+			//fmt.Println("get vote: ",v)
+			m.Network.NewValidatorMetrics(v)
 		}
 	}
 }

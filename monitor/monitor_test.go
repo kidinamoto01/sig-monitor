@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	crypto "github.com/tendermint/go-crypto"
+	"github.com/tendermint/go-crypto"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtypes "github.com/tendermint/tendermint/types"
-	mock "github.com/tendermint/tools/tm-monitor/mock"
-	monitor "github.com/tendermint/tools/tm-monitor/monitor"
+	"github.com/kidinamoto01/Basecoin-test/sig-monitor/mock"
+	"github.com/kidinamoto01/Basecoin-test/sig-monitor/monitor"
 )
 
 func TestMonitorUpdatesNumberOfValidators(t *testing.T) {

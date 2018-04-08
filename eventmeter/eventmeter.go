@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	metrics "github.com/rcrowley/go-metrics"
+	 "github.com/rcrowley/go-metrics"
 	client "github.com/tendermint/tendermint/rpc/lib/client"
 	"github.com/tendermint/tmlibs/events"
 	"github.com/tendermint/tmlibs/log"

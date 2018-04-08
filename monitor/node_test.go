@@ -9,9 +9,9 @@ import (
 	crypto "github.com/tendermint/go-crypto"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmtypes "github.com/tendermint/tendermint/types"
-	em "github.com/tendermint/tools/tm-monitor/eventmeter"
-	mock "github.com/tendermint/tools/tm-monitor/mock"
-	monitor "github.com/tendermint/tools/tm-monitor/monitor"
+	em "github.com/kidinamoto01/Basecoin-test/sig-monitor/eventmeter"
+	 "github.com/kidinamoto01/Basecoin-test/sig-monitor/mock"
+	 "github.com/kidinamoto01/Basecoin-test/sig-monitor/monitor"
 )
 
 const (

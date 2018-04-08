@@ -6,7 +6,7 @@ import (
 
 	rpc "github.com/tendermint/tendermint/rpc/lib/server"
 	"github.com/tendermint/tmlibs/log"
-	monitor "github.com/tendermint/tools/tm-monitor/monitor"
+	"github.com/kidinamoto01/Basecoin-test/sig-monitor/monitor"
 )
 
 func startRPC(listenAddr string, m *monitor.Monitor, logger log.Logger) {
@@ -119,6 +119,12 @@ func RPCUnmonitor(m *monitor.Monitor) interface{} {
 //--> types
 
 type networkAndNodes struct {
+	Network *monitor.Network `json:"network"`
+	Nodes   []*monitor.Node  `json:"nodes"`
+}
+
+
+type networkAndValidators struct {
 	Network *monitor.Network `json:"network"`
 	Nodes   []*monitor.Node  `json:"nodes"`
 }
